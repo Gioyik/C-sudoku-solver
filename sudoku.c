@@ -1,6 +1,55 @@
 #include <stdio.h>
 #include <time.h>
 
+const short shift[10] = {0, 1, 2, 4, 8, 16, 32, 64, 128, 256};
+int calls = 0;
+
+typedef struct {
+    // This represents the 9x9 Sudoku grid. Char values range from 0 to 9. An empty cell is represented by 0.
+    unsigned char grid[9][9];
+    // This short represents the values that have been used in a given row. Only bitwise operations are applied to this variable.
+    unsigned short row[9]; 
+    // This short represents the values that have been used in a given column. Only bitwise operations are applied to this variable.
+    unsigned short col[9]; 
+    // This short represents the values that have been used in a given box (or square). Only bitwise operations are applied to this variable.
+    unsigned short box[9]; 
+    // This char represents the position of the last filled cell. The first 4 and last 4 bits represent the row and column of the last filled cell respectively.
+    unsigned char pos; 
+} Sudoku;
+
+Sudoku init(char puzzle[9][9]) {
+    // Initializes the Sudoku struct given a puzzle as represented by a 2D array of chars.
+    Sudoku mySud = {.row = {0}, .col = {0}, .box = {0}};
+    char r, c;
+    char val;
+    short one;
+    for (r = 0; r < 9; r++) {
+        for (c = 0; c < 9; c++) {
+            // This block is also used in the solve function. The explanation is there too.
+            val = puzzle[r][c];
+            one = shift[val];
+            mySud.grid[r][c] = val;
+            mySud.row[r] |= one;
+            mySud.col[c] |= one;
+            mySud.box[(c/3) + 3*(r/3)] |= one;
+        }
+    }
+    mySud.pos = 0;
+    return mySud;
+}
+
+void print(Sudoku myPuzzle) {
+    // Prints the sudoku.
+    char r,c;
+    for (r = 0; r < 9; r++) {
+        for (c = 0; c < 9; c++) {
+            printf("%d  ", myPuzzle.grid[r][c]);
+        }
+        printf("\n\n");
+    }
+    printf("\n");
+}
+
 int main(void) {
 
     // Empty example
