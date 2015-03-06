@@ -38,7 +38,7 @@ Sudoku init(char puzzle[9][9]) {
     return mySud;
 }
 
-void print(Sudoku myPuzzle) {
+void printS(Sudoku myPuzzle) {
     // Prints the sudoku.
     char r,c;
     for (r = 0; r < 9; r++) {
@@ -82,5 +82,53 @@ int main(void) {
     printf("\n\nElapsed: %g seconds\n", time_spent);
 
     return 0;
+
+}
+
+void solve(Sudoku puzzle) {
+    short one, valids;
+    char r, c, val;
+
+    // This is necesary mustly for empty example.
+    // Will prevent  an infinite loop.
+    if (calls == 100000000) {
+        return;
+    }
+    calls++;
+
+    // puzzle.pos indicates the location of the last filled cell. The program will search for empty cells from that location onward.
+    r = puzzle.pos >> 4;
+    c = puzzle.pos & 15;
+
+    // The loop that iterates traverses the grid
+    while (r < 9) {
+        while (c < 9) {
+            if (!puzzle.grid[r][c]) { // If the cell is empty:
+                valids = ~(puzzle.row[r] | puzzle.col[c] | puzzle.box[(c/3) + 3*(r/3)]); // Compute valid entries for that empty cell.
+                for (val = 1; val <= 9; val++) { // Iterates through the valid entries for that cell in ascending order.
+                    one = shift[val];
+                    if (one & valids) {
+                        // Creates a new Sudoku struct, newPuzzle, by copying the current Sudoku struct into newPuzzle.
+                        Sudoku newPuzzle;
+                        newPuzzle = puzzle;
+                        // Updates newPuzzle to reflect the insertion of a new value into the empty cell.
+                        newPuzzle.grid[r][c] = val; // Insert the new value into the empty cell.
+                        newPuzzle.row[r] |= one; // That value is no longer available for that given row.
+                        newPuzzle.col[c] |= one; // That value is no longer available for that given column.
+                        newPuzzle.box[(c/3) + 3*(r/3)] |= one; // That value is no longer available for that given box.
+                        newPuzzle.pos = r << 4 | c; // Update the position char to reflect the location of the last filled cell.
+                        // Recursive call to the solve function.
+                        solve(newPuzzle);
+
+                    }
+                }
+                return; // This happens when there are no valid entries for a given cell, causing the program to "backtrack".
+            }
+            c++;
+        }
+        c = 0;
+        r++;
+    }
+    printS(puzzle); // Prints the solution(s) to the puzzle as soon it's found.
 
 }
